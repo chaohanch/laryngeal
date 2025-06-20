@@ -1,0 +1,27 @@
+project:
+  type: website
+  title: "Laryngeal"
+  # execute-dir: project
+  output-dir: /Users/chaohan/Documents/GitHub/chaohanch.github.io/docs/laryngeal
+  render:
+      - laryngeal_preprocessing_gam.ipynb
+      - laryngeal_analysis_gam.qmd
+
+website:
+  sidebar:
+    style: "docked"
+    search: true
+    contents:
+      - text: "Preprocessing pipeline"
+        href: laryngeal_preprocessing_gam.ipynb
+      - text: "GAM modeling"
+        href: laryngeal_analysis_gam.qmd
+
+format:
+  html:
+    respect-user-color-scheme: true
+    theme: cosmo
+      #light: flatly
+      #dark: darkly
+
+#fontsize: 11.5pt
