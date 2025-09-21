@@ -34,25 +34,14 @@ execute:
 ```{r libraries}
 library(tidyverse)
 library(mgcv)
-library(gratia)
-# source("~/Documents/GitHub/yas_accent/yas_my_functions.R")
+library(itsadug)
 ```
 
-# modeling
+# Load data and cleaning
 
 ```{r load in data}
-
-# define search window
-search_min = 0; search_max = 700;
-# define classic erp window (this can be from permutation test)
-# trad_min <- 332; trad_max <- 632
-
-# collect files
-all_files <- list.files("~/OneDrive - University of Toronto/Projects/Yas accent/data_analysis/gam/item_level/", pattern = "\\.csv$")
-
-# select channels
-chan = c('Cz')
-
+# F0 data
+raw <- read_csv("~/OneDrive - University of Toronto/Projects/Laryngeal/data/gam_F0.csv")
 # data cleaning and organization
 df_f0 <- raw %>%
   pivot_longer(cols = 4:ncol(raw), names_to = "time", values_to = "uV") %>%
