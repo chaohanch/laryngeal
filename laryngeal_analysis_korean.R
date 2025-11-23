@@ -18,7 +18,7 @@ setwd("~/Library/CloudStorage/OneDrive-UniversityofToronto/Projects/Laryngeal/")
 
 # bad participants
 bad_ppts <- c(
-  "F0_0008" # missing behavioral data
+  # "F0_0008" # missing behavioral data
 )
 
 ## behavioral ####
@@ -108,7 +108,7 @@ fig <-
   geom_tile()+
   scale_fill_gradient(low = "white", high="darkgreen")
 fig
-ggsave(plot = fig, width = 5, height = 4, units = "in", dpi = 300, filename = paste0("figures/behav_meanK_color_korean.jpg"))
+# ggsave(plot = fig, width = 5, height = 4, units = "in", dpi = 300, filename = paste0("figures/behav_meanK_color_korean.jpg"))
 
 # individual
 df_sum <- df_dat %>%
@@ -120,7 +120,7 @@ fig <-
   geom_tile()+
   scale_fill_gradient(low = "white", high="darkgreen")
 fig
-ggsave(plot = fig, width = 40, height = 4, units = "in", dpi = 300, filename = paste0("figures/behav_individual_meanK_color_korean.jpg"))
+# ggsave(plot = fig, width = 40, height = 4, units = "in", dpi = 300, filename = paste0("figures/behav_individual_meanK_color_korean.jpg"))
 
 fig <-
   ggplot(df_dat, aes(target, resp)) + 
@@ -129,7 +129,7 @@ fig <-
   stat_summary(fun.data=mean_se, geom="errorbar", position=position_dodge()) +
   ylab("/k/ response")
 fig
-ggsave(plot = fig, width = 40, height = 4, units = "in", dpi = 300, filename = paste0("figures/behav_individual_meanK_bar_korean.jpg"))
+# ggsave(plot = fig, width = 40, height = 4, units = "in", dpi = 300, filename = paste0("figures/behav_individual_meanK_bar_korean.jpg"))
 
 
 # normalize data
@@ -168,7 +168,7 @@ fig <-
     legend.position = "none",
     legend.title = element_blank()) # change the position of legend. "none" to hide legend
 fig
-ggsave(plot = fig, width = 5.5, height = 4, units = "in", dpi = 300, filename = paste0(paste0("figures/behav_categorical_function_korean.jpg")))
+# ggsave(plot = fig, width = 5.5, height = 4, units = "in", dpi = 300, filename = paste0(paste0("figures/behav_categorical_function_korean.jpg")))
 
 
 # inidividual slopes, plot density, t test
@@ -241,7 +241,7 @@ fig_dist <-
   labs(x = "Slope", # x-axis label
        y = "Number of participants") # y-axis label
 fig_dist
-ggsave(plot = fig_dist, width = 4.5, height = 4, units = "in", dpi = 300, filename = paste0(paste0("figures/behav_slope_distribution_english.jpg")))
+# ggsave(plot = fig_dist, width = 4.5, height = 4, units = "in", dpi = 300, filename = paste0(paste0("figures/behav_slope_distribution_english.jpg")))
 
 
 # t test
