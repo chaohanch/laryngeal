@@ -10,7 +10,7 @@ library(tidyverse)
 library(mgcv)
 # library(itsadug)
 library(gratia)
-source("~/Documents/GitHub/laryngeal/laryngeal_my_functions.R")
+source("~/Documents/GitHub/laryngeal/laryngeal_gam_functions.R")
 
 # Load data and cleaning
 # 
@@ -59,7 +59,7 @@ vot_min <- 212; vot_max <- 584
 f0_min <- 196; f0_max <- 380
 
 # collect files
-all_files <- list.files("~/OneDrive - University of Toronto/Projects/Laryngeal/data_analysis/gam/", pattern = "\\.csv$")
+all_files <- list.files("~/OneDrive - University of Toronto/Projects/Laryngeal/Data/data_english/data_analysis/gam/", pattern = "\\.csv$")
 
 exclude_ppts = c(
   'VOT_0037' # one cell no data
@@ -93,7 +93,7 @@ for (file in all_files) {
     }
   
   # get data
-  raw <- read_csv(paste0("~/OneDrive - University of Toronto/Projects/Laryngeal/data_analysis/gam/", file))
+  raw <- read_csv(paste0("~/OneDrive - University of Toronto/Projects/Laryngeal/Data/data_english/data_analysis/gam/", file))
   # organize data
   df <- raw %>%
     rename(item = condition) %>%
@@ -246,4 +246,4 @@ for (file in all_files) {
   }
 }
 
-write.table(df_gam, file = "~/OneDrive - University of Toronto/Projects/Laryngeal/data_analysis/gam/df_gam.txt", sep = "\t", row.names = FALSE)
+# write.table(df_gam_new, file = "~/OneDrive - University of Toronto/Projects/Laryngeal/Data/data_english/data_analysis/gam/df_gam.txt", sep = "\t", row.names = FALSE)

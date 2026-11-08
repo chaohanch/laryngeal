@@ -89,10 +89,10 @@ myfunc_cor_plot <- function(data, y_label) {
          mapping = aes(x = slope, y = amp, 
                        group = group, color = group, fill = group
          )) +
-    facet_wrap(vars(poa)) +
+    facet_grid(poa ~ direction) +
     scale_color_manual(values = c("F0"="#BC770B", "VOT"="#7030EB")) +
     scale_fill_manual(values = c("F0"="#BC770B", "VOT"="#7030EB")) +
-    geom_point(size = 1.2, alpha = 0.8) +
+    geom_point(size = 1, alpha = 0.8) +
     # coord_cartesian(ylim = c(-7, 7),
     #                 xlim = c(0, 10)) +
     # scale_x_continuous(breaks = seq(1,10, 1)) +
@@ -115,10 +115,10 @@ myfunc_cor_plot <- function(data, y_label) {
       # axis.text.x = element_blank(),
       # legend.text = element_blank(),
       legend.title = element_blank(),
-      legend.position = "inside",
-      legend.position.inside = c(0.1, 0.85),
+      legend.position = "top",
+      # legend.position.inside = c(0.1, 0.85),
       # legend.margin = margin(0,0,0,0),
-      text = element_text(size = 16),
+      # text = element_text(size = 16),
       # title = element_text(size = 12),
       # plot.title = element_text(hjust = 0.5,
       #                           margin = margin(b = 0)),

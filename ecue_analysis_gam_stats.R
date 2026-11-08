@@ -8,11 +8,11 @@ library(ggpubr)
 # library(emmeans)
 
 # load data ####
-df_gam <- read.table(file = "~/OneDrive - University of Toronto/Projects/Laryngeal/Seoul Data/data_analysis/gam/df_gam.txt", header = TRUE)
-# df_gam <- read.table(file = "~/OneDrive - University of Toronto/Projects/Laryngeal/data_analysis/gam/df_gam.txt", header = TRUE)
+# df_gam <- read.table(file = "~/OneDrive - University of Toronto/Projects/Laryngeal/Seoul Data/data_analysis/gam/df_gam.txt", header = TRUE)
+df_gam <- read.table(file = "~/OneDrive - University of Toronto/Projects/Laryngeal/Data/data_english/data_analysis/gam/df_gam.txt", header = TRUE)
 
 
-df_ppt <- read_delim("~/OneDrive - University of Toronto/Projects/Laryngeal/data_analysis/participants_include.txt", delim = "\t") %>%
+df_ppt <- read_delim("~/OneDrive - University of Toronto/Projects/Laryngeal/Data/data_english/data_analysis/participants_include.txt", delim = "\t") %>%
   filter(include == 1)
 
 # add group info and pick participants

@@ -14,8 +14,6 @@ source("~/Documents/GitHub/laryngeal/my_themes.R")
 
 setwd("~/Library/CloudStorage/OneDrive-UniversityofToronto/Projects/Laryngeal/")
 
-# Korean ####
-
 # bad participants
 bad_ppts <- c(
   # "F0_0008" # missing behavioral data
@@ -46,19 +44,23 @@ fig
 
 
 # get info from behavioral data
-
+df_ppt <- read_delim("~/OneDrive - University of Toronto/Projects/Laryngeal/Data/data_english/data_analysis/participants_include.txt", delim = "\t") %>%
+  filter(include == 1)
 # collect files
-all_files <- list.files("Seoul Data/behav/", pattern = "\\.csv$")
+all_files <- list.files("~/OneDrive - University of Toronto/Projects/Laryngeal/Data/data_english/behav/", pattern = "\\.csv$")
 
 # trim and combine files and code participant
 all=NULL
 for (file in all_files) {
   
   ppt <- paste0( strsplit(file, "_")[[1]][3], "_", strsplit(file, "_")[[1]][2] )
-  if (ppt %in% bad_ppts) {next}
+  if (!ppt %in% df_ppt$participant) {next}
+  
+  # english 0047 behav missing
+  if (ppt %in% c("VOT_0047")) {next}
     
   # single ppt data
-  tmp <- read.csv(paste0("Seoul Data/behav/", file)) %>%
+  tmp <- read.csv(paste0("Data/data_english/behav/", file)) %>%
     rename(any_of(c(soundstimuli = "F0sounds", soundstimuli = "VOTsounds"))) %>%
     select(practice_sounds, category, repetition, soundstimuli, correctAns, prac_key_resp.keys, exptrial_key_resp.keys, expName) %>%
     mutate(part = ppt)
@@ -71,9 +73,11 @@ for (file in all_files) {
 # practice (ha vs. a) check -- out of 8 trials, several people got one wrong and one person got two wrong but their behavioral data look fine. So, we'll keep them. 
 df_practice <- all %>%
   filter(practice_sounds != "") %>%
-  mutate(prac_resp = ifelse(prac_key_resp.keys %in% c("m"), "ha", "a"),
-         target = ifelse(grepl("_ha_", practice_sounds), "ha", "a"),
-         acc = ifelse(target == prac_resp, 1, 0))
+  mutate(
+    # prac_resp = ifelse(prac_key_resp.keys %in% c("m"), "ha", "a"), # korean
+    prac_resp = ifelse(prac_key_resp.keys %in% c("4"), "ha", "a"), # english
+    target = ifelse(grepl("_ha_", practice_sounds), "ha", "a"),
+    acc = ifelse(target == prac_resp, 1, 0))
 xtabs(~practice_sounds+prac_resp, df_practice)
 
 # accuracy
@@ -88,10 +92,13 @@ df_dat <- all %>%
   filter(soundstimuli != "") %>%
   group_by(soundstimuli) %>%
   mutate(
-    f0 = as.numeric(strsplit(soundstimuli,"_")[[1]][9]),
-    vot = as.numeric(strsplit(soundstimuli,"_")[[1]][11]),
-    Response = ifelse(exptrial_key_resp.keys %in% c("z"), "ka", "ga"),
-    resp = ifelse(exptrial_key_resp.keys %in% c("z"), 1, 0),
+    # f0 = as.numeric(strsplit(soundstimuli,"_")[[1]][9]), # korean
+    # vot = as.numeric(strsplit(soundstimuli,"_")[[1]][11]), # korean
+    f0 = as.numeric(strsplit(soundstimuli,"_")[[1]][10]), # korean
+    vot = as.numeric(strsplit(soundstimuli,"_")[[1]][12]), # korean
+    Response = ifelse(exptrial_key_resp.keys %in% c("1"), "ka", "ga"), # english
+    # resp = ifelse(exptrial_key_resp.keys %in% c("z"), 1, 0), # korean
+    resp = ifelse(exptrial_key_resp.keys %in% c("1"), 1, 0), # english
     cat = ifelse(category=="low_low","ga","ka"),
     target = ifelse(category == "low_low","g","k")
   )
@@ -102,6 +109,8 @@ xtabs(~cat+resp+part, df_dat)
 df_sum <- df_dat %>%
   group_by(expName, f0, vot) %>%
   summarize(mean_k = mean(resp))
+# write_delim(x=df_sum, file = "Data/data_english/data_analysis/df_behav_gav_english", delim = "\t")
+
 fig <-
   ggplot(df_sum, aes(vot, f0, fill=mean_k)) + 
   facet_grid(. ~ expName) +
@@ -120,7 +129,7 @@ fig <-
   geom_tile()+
   scale_fill_gradient(low = "white", high="darkgreen")
 fig
-# ggsave(plot = fig, width = 40, height = 4, units = "in", dpi = 300, filename = paste0("figures/behav_individual_meanK_color_korean.jpg"))
+ggsave(plot = fig, width = 40, height = 4, units = "in", dpi = 300, filename = paste0("results/Nov_28_2025/behav_individual_meanK_color_english.jpg"))
 
 fig <-
   ggplot(df_dat, aes(target, resp)) + 
@@ -129,7 +138,7 @@ fig <-
   stat_summary(fun.data=mean_se, geom="errorbar", position=position_dodge()) +
   ylab("/k/ response")
 fig
-# ggsave(plot = fig, width = 40, height = 4, units = "in", dpi = 300, filename = paste0("figures/behav_individual_meanK_bar_korean.jpg"))
+ggsave(plot = fig, width = 40, height = 4, units = "in", dpi = 300, filename = paste0("results/Nov_28_2025/behav_individual_meanK_bar_english.jpg"))
 
 
 # normalize data
@@ -138,6 +147,7 @@ df_norm <- df_dat %>%
   mutate(f0_n = as.numeric(scale(f0)),
          vot_n = as.numeric(scale(vot)),
          cue_value = ifelse(expName == "F0", f0_n, vot_n))
+write_delim(x = df_norm, file = "Data/data_english/data_analysis/df_behav_norm.txt", delim = "\t")
 
 # plot functions
 fig <-
@@ -220,8 +230,8 @@ for (ppt in ppt_list) {
 # plot distribution
 fig_dist <-
   ggplot(data = df_thresh, aes(group = group, fill = group)) +
-  # geom_histogram(aes(x = as.numeric(slope)), binwidth = 0.1, position = "identity", alpha = 0.5, color = "white") +
-  geom_density(aes(x = as.numeric(slope)), alpha = 0.5, color = NA) +
+  geom_histogram(aes(x = as.numeric(slope)), binwidth = 0.1, position = "identity", alpha = 0.5, color = "white") +
+  # geom_density(aes(x = as.numeric(slope)), alpha = 0.5, color = NA) +
   scale_fill_manual(values = c(
     "F0"="#156082",
     "VOT"="#E97132"
@@ -274,8 +284,8 @@ tmp_f0 <- F0.slopes %>%
   mutate(group = "F0") %>%
   dplyr::rename("slope" = f0.n)
 df_thresh_yj <- rbind(tmp_vot, tmp_f0) %>%
-  mutate(language = "korean")
-write_delim(x = df_thresh_yj, file = "Seoul Data/data_analysis/df_thresh_korean.txt", delim = "\t")
+  mutate(language = "english")
+write_delim(x = df_thresh_yj, file = "Data/data_english/data_analysis/df_thresh_english.txt", delim = "\t")
 
 # plot slope distribution
 fig_dist <-

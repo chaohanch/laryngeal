@@ -1,60 +1,31 @@
-# code for behavioral data adapted based on Yunjung's script
-
-library(tidyverse)
-library(lmerTest)
-# library(ez)
-# library(cowplot)
-# library(ggpubr)
-# library(ggrepel)
-# library(gridExtra)
-# library(scales)
-
-source("~/Documents/GitHub/laryngeal/my_themes.R")
-
-setwd("~/Library/CloudStorage/OneDrive-UniversityofToronto/Projects/Laryngeal/")
-
-# English ####
-df_ppt <- read_delim("data_analysis/participants_include.txt", delim = "\t") %>%
-  filter(include == 1)
-
-# bad participants
-bad_ppts <- c(
-  "VOT_0047" # missing behavioral data
-)
-
-## behavioral ####
-
 # get info from behavioral data
-
 # collect files
-all_files <- list.files("data_raw/behavioral/", pattern = "\\.csv$")
+all_files <- list.files("~/OneDrive - University of Toronto/Projects/Laryngeal/Data/data_korean/behav/", pattern = "\\.csv$")
 
 # trim and combine files and code participant
 all=NULL
 for (file in all_files) {
   
   ppt <- paste0( strsplit(file, "_")[[1]][3], "_", strsplit(file, "_")[[1]][2] )
-  if (ppt %in% bad_ppts) {
-    next
-  } else if (ppt %in% df_ppt$participant) {
-    
-    # single ppt data
-    tmp <- read.csv(paste0("data_raw/behavioral/", file)) %>%
-      rename(any_of(c(soundstimuli = "soundstimuli", soundstimuli = "VOTsounds"))) %>%
-      select(practice_sounds, category, repetition, soundstimuli, correctAns, prac_key_resp.keys, exptrial_key_resp.keys, expName) %>%
-      mutate(part = ppt)
-    
-    # add in data
-    all = rbind(all, tmp)
-    }
+  
+  # single ppt data
+  tmp <- read.csv(paste0("Data/data_korean/behav/", file)) %>%
+    rename(any_of(c(soundstimuli = "F0sounds", soundstimuli = "VOTsounds"))) %>%
+    select(practice_sounds, category, repetition, soundstimuli, correctAns, prac_key_resp.keys, exptrial_key_resp.keys, expName) %>%
+    mutate(part = ppt)
+  
+  # add in data
+  all = rbind(all, tmp)
+  
 }
 
 # practice (ha vs. a) check -- out of 8 trials, several people got one wrong and one person got two wrong but their behavioral data look fine. So, we'll keep them. 
 df_practice <- all %>%
   filter(practice_sounds != "") %>%
-  mutate(prac_resp = ifelse(prac_key_resp.keys %in% c(0, 4), "ha", "a"),
-         target = ifelse(grepl("_ha_", practice_sounds), "ha", "a"),
-         acc = ifelse(target == prac_resp, 1, 0))
+  mutate(
+    prac_resp = ifelse(prac_key_resp.keys %in% c("m"), "ha", "a"), # korean
+    target = ifelse(grepl("_ha_", practice_sounds), "ha", "a"),
+    acc = ifelse(target == prac_resp, 1, 0))
 xtabs(~practice_sounds+prac_resp, df_practice)
 
 # accuracy
@@ -69,12 +40,15 @@ df_dat <- all %>%
   filter(soundstimuli != "") %>%
   group_by(soundstimuli) %>%
   mutate(
-    f0 = as.numeric(strsplit(soundstimuli,"_")[[1]][10]),
-    vot = as.numeric(strsplit(soundstimuli,"_")[[1]][12]),
-    Response = ifelse(exptrial_key_resp.keys %in% c("1","q"), "ka", "ga"),
-    resp = ifelse(exptrial_key_resp.keys %in% c("1","q"), 1, 0),
-    cat = ifelse(category=="low_low","ga","ka"),
-    target = ifelse(category == "low_low","g","k")
+    f0 = as.numeric(strsplit(soundstimuli,"_")[[1]][9]), # korean
+    vot = as.numeric(strsplit(soundstimuli,"_")[[1]][11]), # korean
+    resp = ifelse(exptrial_key_resp.keys %in% c("z"), 1, 0), # korean
+    cat = case_when(expName=="F0" & category=="highVOT" ~ "ga",
+                    expName=="VOT" & category=="low_low" ~ "ga",
+                    .default = "ka"),
+    target = case_when(expName=="F0" & category=="highVOT" ~ "g",
+                       expName=="VOT" & category=="low_low" ~ "ga",
+                       .default = "ka"),
   )
 xtabs(~cat+resp+part, df_dat)
 
@@ -83,13 +57,17 @@ xtabs(~cat+resp+part, df_dat)
 df_sum <- df_dat %>%
   group_by(expName, f0, vot) %>%
   summarize(mean_k = mean(resp))
+write_delim(x=df_sum, file = "Data/data_korean/data_analysis/df_behav_gav_korean.txt", delim = "\t")
+
 fig <-
   ggplot(df_sum, aes(vot, f0, fill=mean_k)) + 
   facet_grid(. ~ expName) +
   geom_tile()+
   scale_fill_gradient(low = "white", high="darkgreen")
 fig
-ggsave(plot = fig, width = 5, height = 4, units = "in", dpi = 300, filename = paste0("figures/behav_meanK_color_english.jpg"))
+# ggsave(plot = fig, width = 5, height = 4, units = "in", dpi = 300, filename = paste0("figures/Nov_28_2025/behav_meanK_color_korean.jpg"))
+
+
 
 # individual
 df_sum <- df_dat %>%
@@ -101,7 +79,7 @@ fig <-
   geom_tile()+
   scale_fill_gradient(low = "white", high="darkgreen")
 fig
-ggsave(plot = fig, width = 40, height = 4, units = "in", dpi = 300, filename = paste0("figures/behav_individual_meanK_color_english.jpg"))
+ggsave(plot = fig, width = 40, height = 4, units = "in", dpi = 300, filename = paste0("results/Nov_28_2025/behav_individual_meanK_color_korean.jpg"))
 
 fig <-
   ggplot(df_dat, aes(target, resp)) + 
@@ -110,7 +88,7 @@ fig <-
   stat_summary(fun.data=mean_se, geom="errorbar", position=position_dodge()) +
   ylab("/k/ response")
 fig
-ggsave(plot = fig, width = 40, height = 4, units = "in", dpi = 300, filename = paste0("figures/behav_individual_meanK_bar_english.jpg"))
+ggsave(plot = fig, width = 40, height = 4, units = "in", dpi = 300, filename = paste0("results/Nov_28_2025/behav_individual_meanK_bar_korean.jpg"))
 
 
 # normalize data
@@ -119,7 +97,7 @@ df_norm <- df_dat %>%
   mutate(f0_n = as.numeric(scale(f0)),
          vot_n = as.numeric(scale(vot)),
          cue_value = ifelse(expName == "F0", f0_n, vot_n))
-write_delim(x = df_norm, file = "data_analysis/df_behav_norm.txt", delim = "\t")
+# write_delim(x = df_norm, file = "Data/data_korean/data_analysis/df_behav_norm.txt", delim = "\t")
 
 # plot functions
 fig <-
@@ -150,7 +128,7 @@ fig <-
     legend.position = "none",
     legend.title = element_blank()) # change the position of legend. "none" to hide legend
 fig
-ggsave(plot = fig, width = 5.5, height = 4, units = "in", dpi = 300, filename = paste0(paste0("figures/behav_categorical_function_english.jpg")))
+# ggsave(plot = fig, width = 5.5, height = 4, units = "in", dpi = 300, filename = paste0(paste0("figures/behav_categorical_function_korean.jpg")))
 
 
 # inidividual slopes, plot density, t test
@@ -223,7 +201,7 @@ fig_dist <-
   labs(x = "Slope", # x-axis label
        y = "Number of participants") # y-axis label
 fig_dist
-ggsave(plot = fig_dist, width = 4.5, height = 4, units = "in", dpi = 300, filename = paste0(paste0("figures/behav_slope_distribution_english.jpg")))
+# ggsave(plot = fig_dist, width = 4.5, height = 4, units = "in", dpi = 300, filename = paste0(paste0("figures/behav_slope_distribution_english.jpg")))
 
 
 # t test
@@ -244,6 +222,10 @@ VOT.slopes = ranef(fit1)$part[2] + fixef(fit1)[2]
 F0.slopes = ranef(fit2)$part[2] + fixef(fit2)[2]
 VOT.slopes$ppt = row.names(VOT.slopes)
 F0.slopes$ppt = row.names(F0.slopes)
+df_slope_korean <- VOT.slopes %>%
+  rename(slope = vot.n) %>%
+  mutate(group = "VOT")
+
 
 tmp_vot <- VOT.slopes %>%
   mutate(group = "VOT") %>%
@@ -252,9 +234,8 @@ tmp_f0 <- F0.slopes %>%
   mutate(group = "F0") %>%
   dplyr::rename("slope" = f0.n)
 df_thresh_yj <- rbind(tmp_vot, tmp_f0) %>%
-  mutate(language = "english")
-write_delim(x = df_thresh_yj, file = "data_analysis/df_thresh_english.txt", delim = "\t")
-
+  mutate(language = "korean")
+write_delim(x = df_thresh_yj, file = "Data/data_korean/data_analysis/df_thresh_korean.txt", delim = "\t")
 
 # plot slope distribution
 fig_dist <-
@@ -271,7 +252,7 @@ fig_dist <-
   #   # labels = c("(ms)", 0, 200, 400, 600, 800)
   # ) +
   scale_y_continuous(
-    breaks = seq(0, 10, by = 2),  # Specify the desired breaks
+    # breaks = seq(0, 10, by = 2),  # Specify the desired breaks
     # labels = c("(ms)", 0, 200, 400, 600, 800)
   ) +
   # coord_cartesian(xlim = c(-1, 2.5)) +
@@ -287,7 +268,7 @@ fig_dist <-
   labs(x = "Cue weight", # x-axis label
        y = "Number of participants") # y-axis label
 fig_dist
-ggsave(plot = fig_dist, width = 4.5, height = 4, units = "in", dpi = 300, filename = paste0(paste0("figures/behav_slope_distribution_english.jpg")))
+# ggsave(plot = fig_dist, width = 4.5, height = 4, units = "in", dpi = 300, filename = paste0(paste0("figures/behav_slope_distribution_english.jpg")))
 
 # t test
 t.test(as.numeric(slope) ~ group, data = df_thresh_yj)

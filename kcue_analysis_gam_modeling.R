@@ -10,7 +10,7 @@ library(tidyverse)
 library(mgcv)
 # library(itsadug)
 library(gratia)
-source("~/Documents/GitHub/laryngeal/laryngeal_my_functions.R")
+source("~/Documents/GitHub/laryngeal/laryngeal_gam_functions.R")
 
 # Load data and cleaning
 # 
@@ -59,7 +59,7 @@ vot_min <- 252; vot_max <- 444
 f0_min <- 252; f0_max <- 444
 
 # collect files
-all_files <- list.files("~/OneDrive - University of Toronto/Projects/Laryngeal/Seoul Data/data_analysis/gam/", pattern = "\\.csv$")
+all_files <- list.files("~/OneDrive - University of Toronto/Projects/Laryngeal/Data/data_korean/data_analysis/gam/", pattern = "\\.csv$")
 
 exclude_ppts = c(
 )
@@ -92,7 +92,7 @@ for (file in all_files) {
   }
   
   # get data
-  raw <- read_csv(paste0("~/OneDrive - University of Toronto/Projects/Laryngeal/Seoul Data/data_analysis/gam/", file))
+  raw <- read_csv(paste0("~/OneDrive - University of Toronto/Projects/Laryngeal/Data/data_korean/data_analysis/gam/", file))
   # organize data
   df <- raw %>%
     dplyr::rename(item = condition) %>%
@@ -240,9 +240,11 @@ for (file in all_files) {
     }
     
     # print(fig)
-    ggsave(plot = fig, width = 8, height = 5, units = "in", dpi = 300, filename = paste0("~/OneDrive - University of Toronto/Projects/Laryngeal/Seoul Data/figures/gam/", ppt, "_", cond[1], "_minus_", cond[2], ".png"))
+    ggsave(plot = fig, width = 8, height = 5, units = "in", dpi = 300, filename = paste0("~/OneDrive - University of Toronto/Projects/Laryngeal/figures/korean/gam/", ppt, "_", cond[1], "_minus_", cond[2], ".png"))
     
   }
 }
 
-write.table(df_gam, file = "~/OneDrive - University of Toronto/Projects/Laryngeal/Seoul Data/data_analysis/gam/df_gam.txt", sep = "\t", row.names = FALSE)
+df_gam_old <- read_delim("~/OneDrive - University of Toronto/Projects/Laryngeal/Data/data_korean/data_analysis/gam/old/df_gam.txt", delim = "\t")
+df_gam_new <- rbind(df_gam_old, df_gam)
+write.table(df_gam_new, file = "~/OneDrive - University of Toronto/Projects/Laryngeal/Data/data_korean/data_analysis/gam/df_gam.txt", sep = "\t", row.names = FALSE)
